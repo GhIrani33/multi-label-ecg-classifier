@@ -56,21 +56,7 @@ predictions = model.predict([X_ecg, X_features])
 ```
 
 ### **Hyperparameters**
-The model is fine-tuned using hyperparameters found via optimization. Here are the key hyperparameters:
-
-- **Number of Residual Blocks**: 2
-- **Convolutional Filters**: [256, 128]
-- **Kernel Sizes**: [3, 7]
-- **Dropout Rate**: 0.25
-- **LSTM Units**: 128
-- **Dense Units**: 256
-- **Metadata Dense Units**: 16
-- **Combined Dense Units**: 128
-- **Learning Rate**: 4.67e-4
-- **Focal Loss Alpha**: 0.434
-- **Focal Loss Gamma**: 2.135
-
-These parameters were optimized for the highest possible model performance on the ECG dataset.
+The model is fine-tuned using hyperparameters found via optimization. 
 
 ### **Training**
 The model is trained using **Adam optimizer** with a learning rate of 4.67e-4 and the following callbacks:
