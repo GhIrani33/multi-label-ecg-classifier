@@ -241,7 +241,6 @@ safetensors==0.4.0
 sampleproject==3.0.0
 schedule==1.2.1
 schemdraw==0.15
-scikeras==0.13.0
 scikit-base==0.7.5
 scikit-learn==1.5.1
 scikit-optimize==0.10.2
