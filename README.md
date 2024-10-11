@@ -1,7 +1,3 @@
-Here’s how you can fill out the **README** file with the information you provided, structured logically and scientifically.
-
----
-
 ## **ECG Multi-Label Classification with Deep Learning**
 
 ### **Project Description**
