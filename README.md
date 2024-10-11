@@ -131,7 +131,7 @@ You will run the tests using the following steps:
 
 This repository includes automated tests to ensure the model and preprocessing pipelines work correctly.
 
-## How to Run Tests Locally
+**How to Run Tests Locally**
 
 To run the tests locally, first make sure you have all the necessary dependencies installed, then simply run:
 
@@ -139,10 +139,10 @@ To run the tests locally, first make sure you have all the necessary dependencie
 python -m unittest discover -s tests
 
 
-**Why Use Original ECG Signals?**
+## **Why Use Original ECG Signals?**
 Through extensive testing, including various preprocessing techniques and signal visualization, we found that using the **original ECG signals** without heavy modification produced the most robust results. While alternative preprocessing approaches gave higher performance during testing, they were less reliable in real-world applications. Thus, for this project, we prioritize **real-world robustness** over purely performance-driven metrics.
 
-**Contributing**
+## **Contributing**
 We welcome contributions to this project! If you'd like to contribute:
 
 1. Fork the repository.
@@ -150,5 +150,5 @@ We welcome contributions to this project! If you'd like to contribute:
 3. Make your changes and ensure that all tests pass.
 4. Submit a pull request.
 
-**License**
+## **License**
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
