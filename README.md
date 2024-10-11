@@ -55,9 +55,6 @@ model = load_model('Final-ECG-Model.h5', custom_objects={'focal_loss_with_class_
 predictions = model.predict([X_ecg, X_features])
 ```
 
-
-
-
 ### **Hyperparameters**
 The model is fine-tuned using hyperparameters found via optimization. Here are the key hyperparameters:
 
@@ -119,6 +116,79 @@ Confusion matrices are generated for each diagnostic class (e.g., NORM, MI, STTC
 4. **Model Inference**:
    - You can use the saved model (`Final-ECG-Model.h5`) for inference on new ECG data. Just load the model using `keras.models.load_model()` and run predictions.
   
+You will run the tests using the following steps:
+
+1. **Ensure you have your testing framework set up:**
+   Since you’re using `unittest` in Python, the `unittest` module should already be included in your Python installation. Ensure that your project is structured correctly with the `tests/` folder containing `test_preprocessing.py` and `test_models.py`.
+
+2. **Run the tests locally:**
+   You can run all the tests in your `tests/` folder by executing this command in your terminal:
+
+   ```bash
+   python -m unittest discover -s tests
+   ```
+
+   This command will automatically find and run all test files in the `tests/` folder.
+
+3. **Run tests automatically using GitHub Actions (CI):**
+   Since you’ve already set up GitHub Actions in your `.github/workflows/python-app.yml` file, the tests will run automatically every time you push new changes to your repository.
+
+4. **Updating the README File:**
+   It is a good idea to include a section in the README explaining how to run tests. You can add a section like this:
+
+   ### Running the Tests
+
+   This project includes unit tests for preprocessing and model functions to ensure code reliability. You can run the tests locally or as part of Continuous Integration (CI) via GitHub Actions.
+
+   **Locally:**
+   To run all tests locally, use the following command:
+
+   ```bash
+   python -m unittest discover -s tests
+   ```
+
+   This will execute all test cases in the `tests/` folder.
+
+   **Continuous Integration:**
+   The tests are also automatically executed on every push or pull request using GitHub Actions, ensuring that the project stays in good working condition.
+
+
+
+You will run the tests using the following steps:
+
+1. **Ensure you have your testing framework set up:**
+   Since you’re using `unittest` in Python, the `unittest` module should already be included in your Python installation. Ensure that your project is structured correctly with the `tests/` folder containing `test_preprocessing.py` and `test_models.py`.
+
+2. **Run the tests locally:**
+   You can run all the tests in your `tests/` folder by executing this command in your terminal:
+
+   ```bash
+   python -m unittest discover -s tests
+   ```
+
+   This command will automatically find and run all test files in the `tests/` folder.
+
+3. **Run tests automatically using GitHub Actions (CI):**
+   Since you’ve already set up GitHub Actions in your `.github/workflows/python-app.yml` file, the tests will run automatically every time you push new changes to your repository.
+
+4. **Updating the README File:**
+   It is a good idea to include a section in the README explaining how to run tests. You can add a section like this:
+
+ ### Running the Tests
+
+   This project includes unit tests for preprocessing and model functions to ensure code reliability. You can run the tests locally or as part of Continuous Integration (CI) via GitHub Actions.
+
+   **Locally:**
+   To run all tests locally, use the following command:
+
+   ```bash
+   python -m unittest discover -s tests
+   ```
+
+   This will execute all test cases in the `tests/` folder.
+
+**Continuous Integration:**
+The tests are also automatically executed on every push or pull request using GitHub Actions, ensuring that the project stays in good working condition.
 
 
 ### **Why Use Original ECG Signals?**
