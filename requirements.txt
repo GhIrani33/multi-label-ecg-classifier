@@ -243,10 +243,6 @@ schedule==1.2.1
 schemdraw==0.15
 scikit-base==0.7.5
 scikit-learn==1.5.1
-pycaret==3.3.0
-imbalanced-learn==0.12.0
-asreview==1.2.1
-pmdarima==2.0.4
 scikit-optimize==0.10.2
 scikit-plot==0.3.7
 scipy==1.11.4
