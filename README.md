@@ -41,20 +41,6 @@ These architectures are widely used in ECG analysis and are supported by various
 
 
 
-### **Model Weights and Usage**
-The pre-trained model is saved as `Final-ECG-Model.h5` in this repository. You can use it as follows:
-
-#### **Loading the Model**
-```python
-from tensorflow.keras.models import load_model
-
-# Load the pre-trained model
-model = load_model('Final-ECG-Model.h5', custom_objects={'focal_loss_with_class_weights': focal_loss_with_class_weights})
-
-# Prepare your data and make predictions
-predictions = model.predict([X_ecg, X_features])
-```
-
 ### **Hyperparameters**
 The model is fine-tuned using hyperparameters found via optimization. 
 
@@ -141,7 +127,6 @@ You will run the tests using the following steps:
 4. **Updating the README File:**
    It is a good idea to include a section in the README explaining how to run tests. You can add a section like this:
 
-
 ## Running Tests
 
 This repository includes automated tests to ensure the model and preprocessing pipelines work correctly.
@@ -152,10 +137,6 @@ To run the tests locally, first make sure you have all the necessary dependencie
 
 ```bash
 python -m unittest discover -s tests
-
-
-**Continuous Integration:**
-The tests are also automatically executed on every push or pull request using GitHub Actions, ensuring that the project stays in good working condition.
 
 
 ### **Why Use Original ECG Signals?**
@@ -170,7 +151,5 @@ We welcome contributions to this project! If you'd like to contribute:
 3. Make your changes and ensure that all tests pass.
 4. Submit a pull request.
 
-
 ### **License**
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
-
