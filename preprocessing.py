@@ -6,11 +6,6 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import class_weight
 import tensorflow as tf
 
-path = 'dataset/ptb-xl/1.0.3/'
-ptbxl_database_path = path + 'ptbxl_database.csv'
-scp_statements_path = path + 'scp_statements.csv'
-output_path = 'preprocessed_dataset.csv'
-
 def scale_age(age):
     if age > 89:
         age -= 300
