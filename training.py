@@ -21,11 +21,11 @@ tf.random.set_seed(42)
 
 
 # Specify the paths to the dataset and files
-path = 'D:/Project/ECG/ptb-xl-a-large-publicly-available-electrocardiography-dataset-1.0.3/'
-sampling_rate = 500
+path = 'dataset/ptb-xl/1.0.3/'
 ptbxl_database_path = path + 'ptbxl_database.csv'
 scp_statements_path = path + 'scp_statements.csv'
-output_path = 'preprocessed_dataset1.csv'
+output_path = 'preprocessed_dataset.csv'
+
 
 X_ecg, X_features, data, Y = preprocess_data(ptbxl_database_path, scp_statements_path, output_path, sampling_rate, path)
 
@@ -182,74 +182,3 @@ for idx, matrix in enumerate(conf_matrix):
 # Save the final model
 model.save('Final-ECG-Model.keras')
 
-
-
-Data split into train, validation, and test sets.
-X_ecg_train shape: (17418, 1000, 12)
-X_features_train shape: (17418, 3)
-y_train shape: (17418, 5)
-X_ecg_val shape: (2183, 1000, 12)
-X_features_val shape: (2183, 3)
-y_val shape: (2183, 5)
-X_ecg_test shape: (2198, 1000, 12)
-X_features_test shape: (2198, 3)
-y_test shape: (2198, 5)
-
-Precision (macro): 0.7395926184430195
-Recall (macro): 0.7427838948648692
-F1-score (macro): 0.7382023929419919
-AUC-ROC (macro): 0.9162569696906674
-Subset Accuracy: 0.6155595996360328
-Hamming Loss: 0.11583257506824386
-Classification Report:
-C:\Users\PC\AppData\Local\Programs\Python\Python311\Lib\site-packages\sklearn\metrics\_classification.py:1531: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in samples with no predicted labels. Use `zero_division` parameter to control this behavior.
-  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
-C:\Users\PC\AppData\Local\Programs\Python\Python311\Lib\site-packages\sklearn\metrics\_classification.py:1531: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in samples with no true labels. Use `zero_division` parameter to control this behavior.
-  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
-C:\Users\PC\AppData\Local\Programs\Python\Python311\Lib\site-packages\sklearn\metrics\_classification.py:1531: UndefinedMetricWarning: F-score is 
-ill-defined and being set to 0.0 in samples with no true nor predicted labels. Use `zero_division` parameter to control this behavior.
-  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
-              precision    recall  f1-score   support
-
-        NORM       0.84      0.89      0.86       963
-          MI       0.69      0.81      0.75       550
-        STTC       0.72      0.79      0.75       521
-          CD       0.81      0.70      0.75       496
-         HYP       0.63      0.53      0.57       262
-
-   micro avg       0.76      0.79      0.78      2792
-   macro avg       0.74      0.74      0.74      2792
-weighted avg       0.77      0.79      0.77      2792
- samples avg       0.77      0.79      0.76      2792
-
-Class NORM Confusion Matrix:
-[[1076  159]
- [ 108  855]]
-Class MI Confusion Matrix:
-[[1449  199]
- [ 104  446]]
-Class STTC Confusion Matrix:
-[[1520  157]
- [ 112  409]]
-Class CD Confusion Matrix:
-[[1623   79]
- [ 149  347]]
- [ 149  347]]
- [ 149  347]]
-Class HYP Confusion Matrix:
- [ 149  347]]
-Class HYP Confusion Matrix:
- [ 149  347]]
-Class HYP Confusion Matrix:
- [ 149  347]]
-Class HYP Confusion Matrix:
- [ 149  347]]
-Class HYP Confusion Matrix:
-[[1853   83]
- [ 149  347]]
- [ 149  347]]
-Class HYP Confusion Matrix:
- [ 149  347]]
-Class HYP Confusion Matrix:
-[[1853   83]
- [ 123  139]]
