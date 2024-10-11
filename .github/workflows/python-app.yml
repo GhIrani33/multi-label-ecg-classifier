@@ -8,14 +8,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.11 
+    - name: Set up Python 3.11
       uses: actions/setup-python@v3
       with:
-        python-version: '3.11'  
+        python-version: 3.11
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        # Exclude pywin32 for non-Windows systems
+        pip install -r <(grep -v "pywin32" requirements.txt)
     - name: Download PTB-XL Dataset
       run: |
         wget -r -N -c -np https://physionet.org/files/ptb-xl/1.0.3/ -P dataset/
