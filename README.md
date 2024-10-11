@@ -125,6 +125,14 @@ Confusion matrices are generated for each diagnostic class (e.g., NORM, MI, STTC
 Through extensive testing, including various preprocessing techniques and signal visualization, we found that using the **original ECG signals** without heavy modification produced the most robust results. While alternative preprocessing approaches gave higher performance during testing, they were less reliable in real-world applications. Thus, for this project, we prioritize **real-world robustness** over purely performance-driven metrics.
 
 
+## Contributing
+We welcome contributions to this project! If you'd like to contribute:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes and ensure that all tests pass.
+4. Submit a pull request.
+
 
 ### **License**
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
