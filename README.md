@@ -155,18 +155,18 @@ You will run the tests using the following steps:
 4. **Updating the README File:**
    It is a good idea to include a section in the README explaining how to run tests. You can add a section like this:
 
- ### Running the Tests
 
-   This project includes unit tests for preprocessing and model functions to ensure code reliability. You can run the tests locally or as part of Continuous Integration (CI) via GitHub Actions.
+## Running Tests
 
-   **Locally:**
-   To run all tests locally, use the following command:
+This repository includes automated tests to ensure the model and preprocessing pipelines work correctly.
 
-   ```bash
-   python -m unittest discover -s tests
-   ```
+### How to Run Tests Locally
 
-   This will execute all test cases in the `tests/` folder.
+To run the tests locally, first make sure you have all the necessary dependencies installed, then simply run:
+
+```bash
+python -m unittest discover -s tests
+
 
 **Continuous Integration:**
 The tests are also automatically executed on every push or pull request using GitHub Actions, ensuring that the project stays in good working condition.
