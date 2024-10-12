@@ -1,16 +1,26 @@
 # In test_training.py
 
+from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping
-from sklearn.metrics import (precision_score, recall_score, f1_score, roc_auc_score, accuracy_score, hamming_loss)
 from preprocessing import preprocess_data
 from models import create_model, focal_loss_with_class_weights
+from tensorflow.keras.optimizers import Adam
 
-def test_training_pipeline():
-    # Load the dataset (modify the path as needed)
+@patch('preprocessing.pd.read_csv')
+def test_training_pipeline(mock_read_csv):
+    # Mocking pd.read_csv to return dummy DataFrame for test
+    mock_read_csv.return_value = pd.DataFrame({
+        'ecg_id': [1],
+        'scp_codes': [{'NORM': 1}],
+        'age': [60],
+        'sex': [1],
+        'strat_fold': [1],
+        'filename_lr': ['00001_lr'],
+        'filename_hr': ['00001_hr']
+    })
+
     path = 'dataset/ptb-xl/1.0.3/'
     sampling_rate = 500
     ptbxl_database_path = path + 'ptbxl_database.csv'
@@ -19,6 +29,7 @@ def test_training_pipeline():
 
     # Preprocess the data
     X_ecg, X_features, data, Y = preprocess_data(ptbxl_database_path, scp_statements_path, output_path, sampling_rate, path)
+
 
     # Convert data types
     X_ecg = X_ecg.astype(np.float32)
