@@ -13,10 +13,6 @@ We use the **[PTB-XL](https://physionet.org/content/ptb-xl/1.0.3/)** dataset, a 
 - **Labels**: 5 diagnostic categories - NORM, MI, STTC, CD, HYP.
 - **Splits**: Recommended train-test splits from the dataset were used (folds 1-8 for training, fold 9 for validation, fold 10 for testing).
 
-#### **Citations**:
-Please cite the following if using the dataset:
-- **Dataset Citation**: Wagner, P., Strodthoff, N., Bousseljot, R., Samek, W., & Schaeffter, T. (2022). PTB-XL, a large publicly available electrocardiography dataset (version 1.0.3). PhysioNet. https://doi.org/10.13026/kfzx-aw45.
-- **Original Publication**: Wagner, P., Strodthoff, N., Bousseljot, R.-D., Kreiseler, D., Lunze, F.I., Samek, W., Schaeffter, T. (2020), PTB-XL: A Large Publicly Available ECG Dataset. Scientific Data. https://doi.org/10.1038/s41597-020-0495-6.
 
 ### **Model Overview**
 
@@ -39,8 +35,6 @@ These architectures are widely used in ECG analysis and are supported by various
 - **Focal Loss with Class Weights**:
   - The model is trained using a custom **Focal Loss function** that adjusts for class imbalance by giving more weight to harder-to-classify samples. This helps improve performance on underrepresented classes.
 
-
-
 ### **Hyperparameters**
 The model is fine-tuned using hyperparameters found via optimization. 
 
@@ -59,8 +53,6 @@ The model is trained using **Adam optimizer** with a learning rate of 4.67e-4 an
 - **Subset Accuracy:** 61.56%
 - **Hamming Loss:** 11.58%
 
-### **Confusion Matrices**
-Confusion matrices are generated for each diagnostic class (e.g., NORM, MI, STTC, CD, HYP) to assess the performance in detail.
 
 ### **How to Use**
 
@@ -152,4 +144,39 @@ To run the tests locally, first make sure you have all the necessary dependencie
 
 ```bash
 python -m unittest discover -s tests
+
+References
+Please acknowledge For the PTB-XL dataset, please cite
+
+@article{Wagner:2020PTBXL,
+doi = {10.1038/s41597-020-0495-6},
+url = {https://doi.org/10.1038/s41597-020-0495-6},
+year = {2020},
+publisher = {Springer Science and Business Media {LLC}},
+volume = {7},
+number = {1},
+pages = {154},
+author = {Patrick Wagner and Nils Strodthoff and Ralf-Dieter Bousseljot and Dieter Kreiseler and Fatima I. Lunze and Wojciech Samek and Tobias Schaeffter},
+title = {{PTB}-{XL},  a large publicly available electrocardiography dataset},
+journal = {Scientific Data}
+}
+
+@misc{Wagner2020:ptbxlphysionet,
+title={{PTB-XL, a large publicly available electrocardiography dataset}},
+author={Patrick Wagner and Nils Strodthoff and Ralf-Dieter Bousseljot and Wojciech Samek and Tobias Schaeffter},
+doi={10.13026/qgmg-0d46},
+year={2020},
+journal={PhysioNet}
+}
+
+@article{Goldberger2020:physionet,
+author = {Ary L. Goldberger  and Luis A. N. Amaral  and Leon Glass  and Jeffrey M. Hausdorff  and Plamen Ch. Ivanov  and Roger G. Mark  and Joseph E. Mietus  and George B. Moody  and Chung-Kang Peng  and H. Eugene Stanley },
+title = {{PhysioBank, PhysioToolkit, and PhysioNet}},
+journal = {Circulation},
+volume = {101},
+number = {23},
+pages = {e215-e220},
+year = {2000},
+doi = {10.1161/01.CIR.101.23.e215}
+}
 
