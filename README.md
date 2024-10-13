@@ -92,33 +92,6 @@ The model is trained using **Adam optimizer** with a learning rate of 4.67e-4 an
    python -m unittest discover -s tests
    ```
 
-   This will execute all test cases in the `tests/` folder.
-
-   **Continuous Integration:**
-   The tests are also automatically executed on every push or pull request using GitHub Actions, ensuring that the project stays in good working condition.
-
-
-
-You will run the tests using the following steps:
-
-1. **Ensure you have your testing framework set up:**
-   Since you’re using `unittest` in Python, the `unittest` module should already be included in your Python installation. Ensure that your project is structured correctly with the `tests/` folder containing `test_preprocessing.py` and `test_models.py`.
-
-2. **Run the tests locally:**
-   You can run all the tests in your `tests/` folder by executing this command in your terminal:
-
-   ```bash
-   python -m unittest discover -s tests
-   ```
-
-   This command will automatically find and run all test files in the `tests/` folder.
-
-3. **Run tests automatically using GitHub Actions (CI):**
-   Since you’ve already set up GitHub Actions in your `.github/workflows/python-app.yml` file, the tests will run automatically every time you push new changes to your repository.
-
-4. **Updating the README File:**
-   It is a good idea to include a section in the README explaining how to run tests. You can add a section like this:
-
 
 ## **Why Use Original ECG Signals?**
 Through extensive testing, including various preprocessing techniques and signal visualization, we found that using the **original ECG signals** without heavy modification produced the most robust results. While alternative preprocessing approaches gave higher performance during testing, they were less reliable in real-world applications. Thus, for this project, we prioritize **real-world robustness** over purely performance-driven metrics.
@@ -134,16 +107,6 @@ We welcome contributions to this project! If you'd like to contribute:
 ## **License**
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
-## Running Tests
-
-This repository includes automated tests to ensure the model and preprocessing pipelines work correctly.
-
-**How to Run Tests Locally**
-
-To run the tests locally, first make sure you have all the necessary dependencies installed, then simply run:
-
-```bash
-python -m unittest discover -s tests
 
 ## **References** 
 Please acknowledge For the PTB-XL dataset, please cite
