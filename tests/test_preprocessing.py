@@ -61,7 +61,7 @@ class TestPreprocessing(unittest.TestCase):
             pd.DataFrame({
                 'diagnostic': [1, 1, 1, 1, 1],
                 'diagnostic_class': ['NORM', 'MI', 'STTC', 'CD', 'HYP']
-            })
+            }, index=['NORM', 'MI', 'STTC', 'CD', 'HYP'])
         ]
 
         # Mocking wfdb.rdsamp to return dummy ECG data
