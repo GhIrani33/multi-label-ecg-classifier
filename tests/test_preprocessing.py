@@ -41,17 +41,23 @@ class TestPreprocessing(unittest.TestCase):
         # First call returns ptbxl_database.csv, second call returns scp_statements.csv
         mock_read_csv.side_effect = [
             pd.DataFrame({
-                'ecg_id': [1, 2, 3, 4],
-                'scp_codes': ["{'NORM': 1}", "{'MI': 1}", "{'STTC': 1}", "{'HYP': 1}"],  # Different labels
-                'age': [60, 70, 80, 85],
-                'sex': [1, 0, 1, 0],  # Alternating Male and Female
-                'strat_fold': [1, 2, 3, 4],
-                'filename_lr': ['00001_lr', '00002_lr', '00003_lr', '00004_lr'],
-                'filename_hr': ['00001_hr', '00002_hr', '00003_hr', '00004_hr']
+                'ecg_id': [1, 2, 3, 4, 5],
+                'scp_codes': [
+                    "{'NORM': 1}",
+                    "{'MI': 1}",
+                    "{'STTC': 1}",
+                    "{'CD': 1}",
+                    "{'HYP': 1}"
+                ],
+                'age': [60, 70, 80, 85, 90],
+                'sex': [1, 0, 1, 0, 1],  # Alternating Male and Female
+                'strat_fold': [1, 2, 3, 4, 5],
+                'filename_lr': ['00001_lr', '00002_lr', '00003_lr', '00004_lr', '00005_lr'],
+                'filename_hr': ['00001_hr', '00002_hr', '00003_hr', '00004_hr', '00005_hr']
             }),
             pd.DataFrame({
-                'diagnostic': [1, 1, 1, 1],
-                'diagnostic_class': ['NORM', 'MI', 'STTC', 'HYP']
+                'diagnostic': [1, 1, 1, 1, 1],
+                'diagnostic_class': ['NORM', 'MI', 'STTC', 'CD', 'HYP']
             })
         ]
         
@@ -76,8 +82,8 @@ class TestPreprocessing(unittest.TestCase):
         self.assertTrue('sex_Female' in X_features.columns)  # 'sex_Female' column exists
 
         # Verify that 'sex_Male' and 'sex_Female' are correctly encoded
-        expected_sex_male = pd.Series([1, 0, 1, 0], name='sex_Male')
-        expected_sex_female = pd.Series([0, 1, 0, 1], name='sex_Female')
+        expected_sex_male = pd.Series([1, 0, 1, 0, 1], name='sex_Male')
+        expected_sex_female = pd.Series([0, 1, 0, 1, 0], name='sex_Female')
         pd.testing.assert_series_equal(X_features['sex_Male'], expected_sex_male)
         pd.testing.assert_series_equal(X_features['sex_Female'], expected_sex_female)
 
@@ -93,17 +99,14 @@ class TestPreprocessing(unittest.TestCase):
         self.assertEqual(Y.loc[1, 'NORM'], 1)
         self.assertEqual(Y.loc[2, 'MI'], 1)
         self.assertEqual(Y.loc[3, 'STTC'], 1)
-        self.assertEqual(Y.loc[4, 'HYP'], 1)
-        # Ensure that other columns are 0
-        for col in expected_Y_columns:
-            if col != 'NORM':
-                self.assertEqual(Y.loc[1, col], 0)
-            if col != 'MI':
-                self.assertEqual(Y.loc[2, col], 0)
-            if col != 'STTC':
-                self.assertEqual(Y.loc[3, col], 0)
-            if col != 'HYP':
-                self.assertEqual(Y.loc[4, col], 0)
+        self.assertEqual(Y.loc[4, 'CD'], 1)
+        self.assertEqual(Y.loc[5, 'HYP'], 1)
+        
+        # Ensure that other columns are 0 where appropriate
+        for idx, row in Y.iterrows():
+            for col in expected_Y_columns:
+                if row[col] != 1 and col in ['NORM', 'MI', 'STTC', 'CD', 'HYP']:
+                    self.assertEqual(row[col], 0)
 
 if __name__ == '__main__':
     unittest.main()
