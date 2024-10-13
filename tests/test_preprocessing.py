@@ -3,7 +3,6 @@ import unittest
 import numpy as np
 import pandas as pd
 from unittest.mock import patch
-from preprocessing import scale_age, load_raw_data, preprocess_data
 
 # Suppress TensorFlow warnings for cleaner test output
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # 0 = all, 1 = INFO, 2 = WARNING, 3 = ERROR
@@ -11,6 +10,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # 0 = all, 1 = INFO, 2 = WARNING, 3 = 
 class TestPreprocessing(unittest.TestCase):
 
     def test_scale_age(self):
+        from preprocessing import scale_age
         # Test case where age is greater than 89
         self.assertEqual(scale_age(90), -210)
         # Test case where age is less than or equal to 89
@@ -18,9 +18,10 @@ class TestPreprocessing(unittest.TestCase):
 
     @patch('preprocessing.wfdb.rdsamp')
     def test_load_raw_data(self, mock_rdsamp):
+        from preprocessing import load_raw_data
         # Mocking wfdb.rdsamp to return dummy ECG data
         mock_rdsamp.return_value = (np.random.rand(1000, 12), {})  # 1000 timesteps, 12 leads
-        
+
         # Create a mock DataFrame for testing the raw data loading function
         df = pd.DataFrame({
             'filename_lr': ['00001_lr', '00002_lr'],
@@ -33,11 +34,12 @@ class TestPreprocessing(unittest.TestCase):
         
         # Assertions
         self.assertIsInstance(result_500, np.ndarray)
-        self.assertEqual(result_500.shape[1], 12)  # Ensure 12 leads
+        self.assertEqual(result_500.shape, (2, 1000, 12))  # Ensure shape is (num_records, timesteps, 12 leads)
 
     @patch('preprocessing.wfdb.rdsamp')
     @patch('preprocessing.pd.read_csv')
     def test_preprocess_data(self, mock_read_csv, mock_rdsamp):
+        from preprocessing import preprocess_data
         # Mocking pd.read_csv to return dummy DataFrames
         # First call returns ptbxl_database.csv, second call returns scp_statements.csv
         mock_read_csv.side_effect = [
@@ -80,7 +82,7 @@ class TestPreprocessing(unittest.TestCase):
         # Assertions to verify the shapes and contents
         self.assertIsInstance(X_ecg, np.ndarray)
         self.assertIsInstance(X_features, pd.DataFrame)
-        self.assertEqual(X_ecg.shape[1], 12)  # Ensure 12 leads
+        self.assertEqual(X_ecg.shape, (5, 1000, 12))  # Ensure shape is (num_records, timesteps, 12 leads)
         self.assertTrue('age' in X_features.columns)  # 'age' column exists
         self.assertTrue('sex_Male' in X_features.columns)  # 'sex_Male' column exists
         self.assertTrue('sex_Female' in X_features.columns)  # 'sex_Female' column exists
