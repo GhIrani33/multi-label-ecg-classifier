@@ -24,20 +24,26 @@ class TestPreprocessing(unittest.TestCase):
         # Simulate loading data with sampling rate of 500 Hz
         result_500 = load_raw_data(df, sampling_rate=500, path=path)
         self.assertIsInstance(result_500, np.ndarray)
-        self.assertEqual(result_500.shape[1], 12)  # Assuming 12 leads in the ECG data
+        self.assertEqual(result_500.shape[2], 12)  # Corrected to check the number of leads
 
     @patch('preprocessing.pd.read_csv')
     def test_preprocess_data(self, mock_read_csv):
         # Mocking pd.read_csv to return dummy DataFrame for test
-        mock_read_csv.return_value = pd.DataFrame({
-            'ecg_id': [1],
-            'scp_codes': [{'NORM': 1}],
-            'age': [60],
-            'sex': [1],
-            'strat_fold': [1],
-            'filename_lr': ['00001_lr'],
-            'filename_hr': ['00001_hr']
-        })
+        mock_read_csv.side_effect = [
+            pd.DataFrame({
+                'ecg_id': [1],
+                'scp_codes': ["{'NORM': 1}"],  # Changed to string
+                'age': [60],
+                'sex': [1],
+                'strat_fold': [1],
+                'filename_lr': ['00001_lr'],
+                'filename_hr': ['00001_hr']
+            }),
+            pd.DataFrame({
+                'diagnostic': [1],
+                'diagnostic_class': ['NORM']
+            })
+        ]
         
         # Simulate paths to dataset and scp_statements.csv for testing
         data_path = 'path_to_test_data/ptbxl_database.csv'
@@ -52,7 +58,7 @@ class TestPreprocessing(unittest.TestCase):
         # Check that X_ecg and X_features are NumPy arrays and DataFrames
         self.assertIsInstance(X_ecg, np.ndarray)
         self.assertIsInstance(X_features, pd.DataFrame)
-        self.assertEqual(X_ecg.shape[1], 12)  # 12 leads in ECG data
+        self.assertEqual(X_ecg.shape[2], 12)  # Corrected to check the number of leads
         self.assertTrue('age' in X_features.columns)  # Ensure 'age' is included
 
 if __name__ == '__main__':
