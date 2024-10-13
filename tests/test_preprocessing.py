@@ -42,29 +42,40 @@ class TestPreprocessing(unittest.TestCase):
     @patch('preprocessing.pd.read_csv')
     def test_preprocess_data(self, mock_read_csv, mock_rdsamp):
         from preprocessing import preprocess_data
-        # Mocking pd.read_csv to return dummy DataFrames
-        # First call returns ptbxl_database.csv, second call returns scp_statements.csv
-        mock_read_csv.side_effect = [
-            pd.DataFrame({
-                'ecg_id': [1, 2, 3, 4, 5],
-                'scp_codes': [
-                    "{'NORM': 1}",
-                    "{'MI': 1}",
-                    "{'STTC': 1}",
-                    "{'CD': 1}",
-                    "{'HYP': 1}"
-                ],
-                'age': [60, 70, 80, 85, 90],
-                'sex': [1, 0, 1, 0, 1],  # Alternating Male and Female
-                'strat_fold': [1, 2, 3, 4, 5],
-                'filename_lr': ['00001_lr', '00002_lr', '00003_lr', '00004_lr', '00005_lr'],
-                'filename_hr': ['00001_hr', '00002_hr', '00003_hr', '00004_hr', '00005_hr']
-            }),
-            pd.DataFrame({
-                'diagnostic': [1, 1, 1, 1, 1],
-                'diagnostic_class': ['NORM', 'MI', 'STTC', 'CD', 'HYP']
-            }, index=['NORM', 'MI', 'STTC', 'CD', 'HYP'])  # Correct indexing
-        ]
+
+        # Define mock data for ptbxl_database.csv
+        mock_ptbxl_database = pd.DataFrame({
+            'ecg_id': [1, 2, 3, 4, 5],
+            'scp_codes': [
+                "{'NORM': 1}",
+                "{'MI': 1}",
+                "{'STTC': 1}",
+                "{'CD': 1}",
+                "{'HYP': 1}"
+            ],
+            'age': [60, 70, 80, 85, 90],
+            'sex': [1, 0, 1, 0, 1],  # Alternating Male and Female
+            'strat_fold': [1, 2, 3, 4, 5],
+            'filename_lr': ['00001_lr', '00002_lr', '00003_lr', '00004_lr', '00005_lr'],
+            'filename_hr': ['00001_hr', '00002_hr', '00003_hr', '00004_hr', '00005_hr']
+        })
+
+        # Define mock data for scp_statements.csv
+        mock_scp_statements = pd.DataFrame({
+            'diagnostic': [1, 1, 1, 1, 1],
+            'diagnostic_class': ['NORM', 'MI', 'STTC', 'CD', 'HYP']
+        }, index=['NORM', 'MI', 'STTC', 'CD', 'HYP'])  # Correct indexing
+
+        # Define a side_effect function to return the correct DataFrame based on the file being read
+        def mock_read_csv_side_effect(file, *args, **kwargs):
+            if 'ptbxl_database.csv' in file:
+                return mock_ptbxl_database.set_index('ecg_id')
+            elif 'scp_statements.csv' in file:
+                return mock_scp_statements
+            else:
+                raise FileNotFoundError(f"Mocked read_csv cannot handle file: {file}")
+
+        mock_read_csv.side_effect = mock_read_csv_side_effect
 
         # Mocking wfdb.rdsamp to return dummy ECG data
         mock_rdsamp.return_value = (np.random.rand(1000, 12), {})  # 1000 timesteps, 12 leads
