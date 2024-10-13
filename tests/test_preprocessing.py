@@ -35,8 +35,9 @@ class TestPreprocessing(unittest.TestCase):
         self.assertIsInstance(result_500, np.ndarray)
         self.assertEqual(result_500.shape[1], 12)  # Ensure 12 leads
 
+    @patch('preprocessing.wfdb.rdsamp')
     @patch('preprocessing.pd.read_csv')
-    def test_preprocess_data(self, mock_read_csv):
+    def test_preprocess_data(self, mock_read_csv, mock_rdsamp):
         # Mocking pd.read_csv to return dummy DataFrames
         # First call returns ptbxl_database.csv, second call returns scp_statements.csv
         mock_read_csv.side_effect = [
@@ -60,7 +61,10 @@ class TestPreprocessing(unittest.TestCase):
                 'diagnostic_class': ['NORM', 'MI', 'STTC', 'CD', 'HYP']
             })
         ]
-        
+
+        # Mocking wfdb.rdsamp to return dummy ECG data
+        mock_rdsamp.return_value = (np.random.rand(1000, 12), {})  # 1000 timesteps, 12 leads
+
         # Simulate paths to dataset and scp_statements.csv for testing
         data_path = 'path_to_test_data/ptbxl_database.csv'
         scp_statements_path = 'path_to_test_data/scp_statements.csv'
