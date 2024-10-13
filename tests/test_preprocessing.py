@@ -1,47 +1,57 @@
+import os
 import unittest
 import numpy as np
 import pandas as pd
 from unittest.mock import patch
 from preprocessing import scale_age, load_raw_data, preprocess_data
 
+# Suppress TensorFlow warnings for cleaner test output
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # 0 = all, 1 = INFO, 2 = WARNING, 3 = ERROR
+
 class TestPreprocessing(unittest.TestCase):
 
     def test_scale_age(self):
         # Test case where age is greater than 89
         self.assertEqual(scale_age(90), -210)
-        # Test case where age is less than 89
+        # Test case where age is less than or equal to 89
         self.assertEqual(scale_age(50), 50)
 
     @patch('preprocessing.wfdb.rdsamp')
     def test_load_raw_data(self, mock_rdsamp):
-        # Mocking wfdb.rdsamp to return dummy data for test
-        mock_rdsamp.return_value = (np.random.rand(5000, 12), {})
+        # Mocking wfdb.rdsamp to return dummy ECG data
+        mock_rdsamp.return_value = (np.random.rand(1000, 12), {})  # 1000 timesteps, 12 leads
         
         # Create a mock DataFrame for testing the raw data loading function
-        df = pd.DataFrame({'filename_lr': ['00001_lr'], 'filename_hr': ['00001_hr']})
+        df = pd.DataFrame({
+            'filename_lr': ['00001_lr', '00002_lr'],
+            'filename_hr': ['00001_hr', '00002_hr']
+        })
         path = 'path_to_test_data/'  # Test data path
 
         # Simulate loading data with sampling rate of 500 Hz
         result_500 = load_raw_data(df, sampling_rate=500, path=path)
+        
+        # Assertions
         self.assertIsInstance(result_500, np.ndarray)
-        self.assertEqual(result_500.shape[2], 12)  # Corrected to check the number of leads
+        self.assertEqual(result_500.shape[1], 12)  # Ensure 12 leads
 
     @patch('preprocessing.pd.read_csv')
     def test_preprocess_data(self, mock_read_csv):
-        # Mocking pd.read_csv to return dummy DataFrame for test
+        # Mocking pd.read_csv to return dummy DataFrames
+        # First call returns ptbxl_database.csv, second call returns scp_statements.csv
         mock_read_csv.side_effect = [
             pd.DataFrame({
-                'ecg_id': [1],
-                'scp_codes': ["{'NORM': 1}"],  # Changed to string
-                'age': [60],
-                'sex': [1],
-                'strat_fold': [1],
-                'filename_lr': ['00001_lr'],
-                'filename_hr': ['00001_hr']
+                'ecg_id': [1, 2, 3, 4],
+                'scp_codes': ["{'NORM': 1}", "{'MI': 1}", "{'STTC': 1}", "{'HYP': 1}"],  # Different labels
+                'age': [60, 70, 80, 85],
+                'sex': [1, 0, 1, 0],  # Alternating Male and Female
+                'strat_fold': [1, 2, 3, 4],
+                'filename_lr': ['00001_lr', '00002_lr', '00003_lr', '00004_lr'],
+                'filename_hr': ['00001_hr', '00002_hr', '00003_hr', '00004_hr']
             }),
             pd.DataFrame({
-                'diagnostic': [1],
-                'diagnostic_class': ['NORM']
+                'diagnostic': [1, 1, 1, 1],
+                'diagnostic_class': ['NORM', 'MI', 'STTC', 'HYP']
             })
         ]
         
@@ -53,13 +63,47 @@ class TestPreprocessing(unittest.TestCase):
         path = 'path_to_test_data/'
 
         # Preprocess the data
-        X_ecg, X_features, data, Y = preprocess_data(data_path, scp_statements_path, output_path, sampling_rate, path)
+        X_ecg, X_features, data, Y = preprocess_data(
+            data_path, scp_statements_path, output_path, sampling_rate, path
+        )
 
-        # Check that X_ecg and X_features are NumPy arrays and DataFrames
+        # Assertions to verify the shapes and contents
         self.assertIsInstance(X_ecg, np.ndarray)
         self.assertIsInstance(X_features, pd.DataFrame)
-        self.assertEqual(X_ecg.shape[2], 12)  # Corrected to check the number of leads
-        self.assertTrue('age' in X_features.columns)  # Ensure 'age' is included
+        self.assertEqual(X_ecg.shape[1], 12)  # Ensure 12 leads
+        self.assertTrue('age' in X_features.columns)  # 'age' column exists
+        self.assertTrue('sex_Male' in X_features.columns)  # 'sex_Male' column exists
+        self.assertTrue('sex_Female' in X_features.columns)  # 'sex_Female' column exists
+
+        # Verify that 'sex_Male' and 'sex_Female' are correctly encoded
+        expected_sex_male = pd.Series([1, 0, 1, 0], name='sex_Male')
+        expected_sex_female = pd.Series([0, 1, 0, 1], name='sex_Female')
+        pd.testing.assert_series_equal(X_features['sex_Male'], expected_sex_male)
+        pd.testing.assert_series_equal(X_features['sex_Female'], expected_sex_female)
+
+        # Additional checks for scaled 'age'
+        self.assertTrue(X_features['age'].min() >= 0 and X_features['age'].max() <= 1)
+
+        # Check that Y has the correct columns
+        expected_Y_columns = ['NORM', 'MI', 'STTC', 'CD', 'HYP']
+        for col in expected_Y_columns:
+            self.assertIn(col, Y.columns)
+        
+        # Check sample values in Y
+        self.assertEqual(Y.loc[1, 'NORM'], 1)
+        self.assertEqual(Y.loc[2, 'MI'], 1)
+        self.assertEqual(Y.loc[3, 'STTC'], 1)
+        self.assertEqual(Y.loc[4, 'HYP'], 1)
+        # Ensure that other columns are 0
+        for col in expected_Y_columns:
+            if col != 'NORM':
+                self.assertEqual(Y.loc[1, col], 0)
+            if col != 'MI':
+                self.assertEqual(Y.loc[2, col], 0)
+            if col != 'STTC':
+                self.assertEqual(Y.loc[3, col], 0)
+            if col != 'HYP':
+                self.assertEqual(Y.loc[4, col], 0)
 
 if __name__ == '__main__':
     unittest.main()
