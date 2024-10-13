@@ -59,9 +59,8 @@ class TestPreprocessing(unittest.TestCase):
                 'filename_hr': ['00001_hr', '00002_hr', '00003_hr', '00004_hr', '00005_hr']
             }),
             pd.DataFrame({
-                'diagnostic': [1, 1, 1, 1, 1],
                 'diagnostic_class': ['NORM', 'MI', 'STTC', 'CD', 'HYP']
-            }, index=['NORM', 'MI', 'STTC', 'CD', 'HYP'])
+            }, index=['NORM', 'MI', 'STTC', 'CD', 'HYP'])  # Correct indexing
         ]
 
         # Mocking wfdb.rdsamp to return dummy ECG data
@@ -102,11 +101,11 @@ class TestPreprocessing(unittest.TestCase):
             self.assertIn(col, Y.columns)
         
         # Check sample values in Y
-        self.assertEqual(Y.loc[1, 'NORM'], 1)
-        self.assertEqual(Y.loc[2, 'MI'], 1)
-        self.assertEqual(Y.loc[3, 'STTC'], 1)
-        self.assertEqual(Y.loc[4, 'CD'], 1)
-        self.assertEqual(Y.loc[5, 'HYP'], 1)
+        self.assertEqual(Y.loc['NORM', 'NORM'], 1)
+        self.assertEqual(Y.loc['MI', 'MI'], 1)
+        self.assertEqual(Y.loc['STTC', 'STTC'], 1)
+        self.assertEqual(Y.loc['CD', 'CD'], 1)
+        self.assertEqual(Y.loc['HYP', 'HYP'], 1)
         
         # Ensure that other columns are 0 where appropriate
         for idx, row in Y.iterrows():
