@@ -1,144 +1,256 @@
-## **ECG Multi-Label Classification with Deep Learning**
+# PTB-XL / PTB-XL+ ECG CDS (Reproducible)
 
-### **Project Description**
-This project focuses on multi-label classification of ECG signals using deep learning techniques, including Conv1D layers with residual connections, Bidirectional LSTMs, and attention mechanisms. The task involves predicting multiple heart-related conditions from ECG signals, aiming to develop an automatic ECG interpretation system that can assist cardiologists in diagnosing heart diseases.
+A multi-label ECG pipeline for **71 PTB-XL statements** + **5 super-classes**, using **raw 12-lead waveforms** and **PTB-XL+ engineered features + median beats**.  
+Two reproducible profiles:
+- **Baseline (General)** — calibrated, stable across all 71 labels.
+- **Hybrid (Minority-Boosted)** — per-label switch to improve recall for 15 rare labels (no retraining at inference).
 
-### **Dataset**
-We use the **[PTB-XL](https://physionet.org/content/ptb-xl/1.0.3/)** dataset, a large publicly available electrocardiography dataset published by Patrick Wagner, Nils Strodthoff, Ralf-Dieter Bousseljot, Wojciech Samek, and Tobias Schaeffter. The dataset consists of 21,799 clinical 12-lead ECGs from 18,869 patients, with each ECG lasting 10 seconds. The dataset includes multiple diagnostic labels per record, following the SCP-ECG standard.
+> This repo ships code only. You download PTB-XL and PTB-XL+ from PhysioNet, then run the pipeline end-to-end on Windows/PowerShell.
 
-#### **Key Details**:
-- **Version**: 1.0.3
-- **Sampling Frequency**: 500 Hz (downsampled version available at 100 Hz).
-- **Leads**: Standard 12 leads (I, II, III, AVR, AVL, AVF, V1–V6).
-- **Labels**: 5 diagnostic categories - NORM, MI, STTC, CD, HYP.
-- **Splits**: Recommended train-test splits from the dataset were used (folds 1-8 for training, fold 9 for validation, fold 10 for testing).
+---
 
+## Data (download first)
 
-### **Model Overview**
+- PTB-XL 1.0.3: https://physionet.org/content/ptb-xl/1.0.3/  
+- PTB-XL+ 1.0.1: https://physionet.org/content/ptb-xl-plus/1.0.1/
 
-These architectures are widely used in ECG analysis and are supported by various research publications. The combination of these techniques allows for effective multi-label classification of ECG signals. For more details on the model, refer to the **models.py** file.
+**Expected directory (absolute Windows paths)**
 
-#### **Key Components**:
+D:\Project\ECG\old
+├─ ptbxl\ # unpack PTB-XL here
+├─ ptbxl+\ # unpack PTB-XL+ here
+├─ processed\ # all processed artifacts will be created here
+└─ scr
+├─ preprocessing.py
+├─ ptbxl_plus_fusion.py
+└─ train
+├─ train_fusion_v2.py # Baseline training
+└─ train_fusion_v2_hybrid.py # Sampler training
 
-- **Convolutional Layers with Residual Connections**: 
-  - The model uses **Conv1D layers** to capture spatial features from ECG signals. Residual connections help in stabilizing the training of deep networks by providing shortcut paths for gradients.
-  
-- **Bidirectional LSTM**:
-  - A **Bidirectional LSTM** is used to capture temporal dependencies in the ECG signals. It helps the model learn information from both past and future time steps.
+r
+Copy code
 
-- **Attention Mechanism**:
-  - A custom **attention layer** is applied after the LSTM layer to help the model focus on the most relevant parts of the ECG signal. This mechanism learns the importance of each timestep and adjusts the model’s focus accordingly.
+---
 
-- **Metadata Input**:
-  - Apart from the ECG signal, metadata (such as age and sex) is processed through a separate **Dense network** and concatenated with the ECG features for classification.
+## Environment
 
-- **Focal Loss with Class Weights**:
-  - The model is trained using a custom **Focal Loss function** that adjusts for class imbalance by giving more weight to harder-to-classify samples. This helps improve performance on underrepresented classes.
+- Windows 10/11, Python ≥3.9, PyTorch (CUDA optional).
+- Create a venv and install requirements (your pinned file, e.g. `requirements.txt` or `ENVIRONMENT.txt`).
 
-### **Hyperparameters**
-The model is fine-tuned using hyperparameters found via optimization. 
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r D:\Project\ECG\old\processed\ENVIRONMENT.txt
+Quick Start (end-to-end)
+All commands assume PowerShell and BASE=D:\Project\ECG\old.
 
-### **Training**
-The model is trained using **Adam optimizer** with a learning rate of 4.67e-4 and the following callbacks:
-- **Early Stopping**: Monitors the validation AUC and stops training when improvement plateaus.
-- **Model Checkpoint**: Saves the best model based on validation AUC.
-- **ReduceLROnPlateau**: Reduces the learning rate when validation performance plateaus to fine-tune learning.
+1) Build processed datasets
+powershell
+Copy code
+python D:\Project\ECG\old\scr\preprocessing.py `
+  --base D:\Project\ECG\old `
+  --ptbxl_root D:\Project\ECG\old\ptbxl
 
+python D:\Project\ECG\old\scr\ptbxl_plus_fusion.py `
+  --base D:\Project\ECG\old `
+  --ptbxl_plus_root D:\Project\ECG\old\ptbxl+
+Creates (under processed\): ptbxl_core.parquet, ptbxl_plus_features_imputed_scaled.parquet, ptbxl_train_ready_plus.parquet, label matrices, splits (train/val/test_ids.csv), and reports.
 
-### **Performance on Test Set**
-- **Precision (macro):** 0.74
-- **Recall (macro):** 0.74
-- **F1-score (macro):** 0.74
-- **AUC-ROC (macro):** 0.91
-- **Subset Accuracy:** 61.56%
-- **Hamming Loss:** 11.58%
+2) Train models (optional if you already have runs)
+Baseline (General)
 
+powershell
+Copy code
+python D:\Project\ECG\old\scr\train\train_fusion_v2.py `
+  --base D:\Project\ECG\old --use_waveform 1 --use_median 1 `
+  --epochs 60 --bs 12 --sched cosine
+Hybrid (Sampler)
 
-### **How to Use**
+powershell
+Copy code
+python D:\Project\ECG\old\scr\train\train_fusion_v2_hybrid.py `
+  --base D:\Project\ECG\old --use_waveform 1 --use_median 1 `
+  --epochs 60 --bs 12 --sched cosine
+Outputs: run folders under processed\runs\ (each with best_model.pt, TRAIN_PLAN.txt, train_log.txt, FINAL_REPORT.txt).
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/your_username/ecg-multilabel-classification.git
-   ```
+3) Evaluate & calibrate
+Baseline
 
-2. **Install Dependencies**:
-   - Create a virtual environment (optional but recommended):
-     ```bash
-     python3 -m venv venv
-     source venv/bin/activate   # For Windows: venv\Scripts\activate
-     ```
-   - Install the required packages:
-     ```bash
-     pip install -r requirements.txt
-     ```
+powershell
+Copy code
+python D:\Project\ECG\old\processed\runs\eval_calibrate_v2.py `
+  --base D:\Project\ECG\old `
+  --run_dir D:\Project\ECG\old\processed\runs\fusion_v2
+Produces: class_metrics_calibrated.csv, calib_tau71.json, thresholds_val.json, CDS_REPORT.txt.
 
-3. **Run the Training Script**:
-   ```bash
-   python training.py
-   ```
+Hybrid (no retraining)
 
-4. **Model Inference**:
-   - You can use the saved model (`Final-ECG-Model.h5`) for inference on new ECG data. Just load the model using `keras.models.load_model()` and run predictions.
-  
+powershell
+Copy code
+# Build per-class VAL thresholds for hybrid (once)
+python D:\Project\ECG\old\processed\runs\hybrid_thresholds_val.py `
+  --base D:\Project\ECG\old `
+  --run_base D:\Project\ECG\old\processed\runs\fusion_v2 `
+  --run_samp D:\Project\ECG\old\processed\runs\fusion_v2_hybrid
 
-   ### Running the Tests
+# Evaluate hybrid with per-label switching
+python D:\Project\ECG\old\processed\runs\eval_calibrate_v2_hybrid.py `
+  --base D:\Project\ECG\old `
+  --run_base D:\Project\ECG\old\processed\runs\fusion_v2 `
+  --run_samp D:\Project\ECG\old\processed\runs\fusion_v2_hybrid
+Produces: class_metrics_hybrid.csv, CDS_REPORT_HYBRID.txt, thresholds_val_hybrid.json.
 
-   This project includes unit tests for preprocessing and model functions to ensure code reliability. You can run the tests locally or as part of Continuous Integration (CI) via GitHub Actions.
+4) Operating points on TEST (for CDS)
+powershell
+Copy code
+# Hybrid policies: F1 / TPR>=90% / FPR<=5%
+python D:\Project\ECG\old\processed\runs\ops_metrics_hybrid.py `
+  --base D:\Project\ECG\old `
+  --run_dir D:\Project\ECG\old\processed\runs\fusion_v2_hybrid `
+  --policy f1
 
-   **Locally:**
-   To run all tests locally, use the following command:
+python D:\Project\ECG\old\processed\runs\ops_metrics_hybrid.py `
+  --base D:\Project\ECG\old `
+  --run_dir D:\Project\ECG\old\processed\runs\fusion_v2_hybrid `
+  --policy tpr90
 
-   ```bash
-   python -m unittest discover -s tests
-   ```
+python D:\Project\ECG\old\processed\runs\ops_metrics_hybrid.py `
+  --base D:\Project\ECG\old `
+  --run_dir D:\Project\ECG\old\processed\runs\fusion_v2_hybrid `
+  --policy fpr05
+Outputs: operating_metrics_test_hybrid_{f1,tpr90,fpr05}.csv + OPS_F1_SUMMARY.csv.
 
+5) Compare Baseline vs Hybrid (ΔAUC per class)
+powershell
+Copy code
+python D:\Project\ECG\old\processed\runs\compare_runs_v2.py `
+  --base D:\Project\ECG\old `
+  --run_base D:\Project\ECG\old\processed\runs\fusion_v2 `
+  --run_samp D:\Project\ECG\old\processed\runs\fusion_v2_hybrid
+What we did (high-level)
+Stage-1: PTB-XL core build (labels 71 + 5, splits, winsorized age, no raw edits).
 
-## **Why Use Original ECG Signals?**
-Through extensive testing, including various preprocessing techniques and signal visualization, we found that using the **original ECG signals** without heavy modification produced the most robust results. While alternative preprocessing approaches gave higher performance during testing, they were less reliable in real-world applications. Thus, for this project, we prioritize **real-world robustness** over purely performance-driven metrics.
+Stage-2: PTB-XL+ fusion (feature QC, impute/scale, median beats, alignment).
 
-## **Contributing**
-We welcome contributions to this project! If you'd like to contribute:
+Stage-3: Training (Baseline & Sampler), Calibration (τ), VAL thresholds (quantile grid), Hybrid per-label switch for 15 rare labels, and OPS on TEST for clinical policies.
 
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Make your changes and ensure that all tests pass.
-4. Submit a pull request.
+See TECHNICAL.md for design, losses, calibration, file semantics, and reproducibility notes.
 
-## **License**
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+yaml
+Copy code
 
+---
 
-## **References** 
-Please acknowledge For the PTB-XL dataset, please cite
+# `TECHNICAL.md` (focused, technical)
 
-@article{Wagner:2020PTBXL,
-doi = {10.1038/s41597-020-0495-6},
-url = {https://doi.org/10.1038/s41597-020-0495-6},
-year = {2020},
-publisher = {Springer Science and Business Media {LLC}},
-volume = {7},
-number = {1},
-pages = {154},
-author = {Patrick Wagner and Nils Strodthoff and Ralf-Dieter Bousseljot and Dieter Kreiseler and Fatima I. Lunze and Wojciech Samek and Tobias Schaeffter},
-title = {{PTB}-{XL},  a large publicly available electrocardiography dataset},
-journal = {Scientific Data}
-}
+```markdown
+# TECHNICAL.md — PTB-XL / PTB-XL+ ECG CDS
 
-@misc{Wagner2020:ptbxlphysionet,
-title={{PTB-XL, a large publicly available electrocardiography dataset}},
-author={Patrick Wagner and Nils Strodthoff and Ralf-Dieter Bousseljot and Wojciech Samek and Tobias Schaeffter},
-doi={10.13026/qgmg-0d46},
-year={2020},
-journal={PhysioNet}
-}
+## 1) Scope
 
-@article{Goldberger2020:physionet,
-author = {Ary L. Goldberger  and Luis A. N. Amaral  and Leon Glass  and Jeffrey M. Hausdorff  and Plamen Ch. Ivanov  and Roger G. Mark  and Joseph E. Mietus  and George B. Moody  and Chung-Kang Peng  and H. Eugene Stanley },
-title = {{PhysioBank, PhysioToolkit, and PhysioNet}},
-journal = {Circulation},
-volume = {101},
-number = {23},
-pages = {e215-e220},
-year = {2000},
-doi = {10.1161/01.CIR.101.23.e215}
-}
+- **Labels:** 71 PTB-XL statements (+ 5 super-classes as guidance).
+- **Inputs:** raw 12-lead 10-sec waveforms (500 Hz), PTB-XL+ engineered features (12SL/ECGdeli/UniG), and median-beat morphology.
+- **Outputs:** calibrated probabilities for 71 labels; per-class thresholds from VAL to realize **F1**, **TPR≥90%**, or **FPR≤5%** on TEST.
+
+Two profiles:
+- **Baseline** — generalist; no class-aware sampler.
+- **Hybrid** — at inference, switch logits to **Sampler model** for a curated `rare_plus` list (15 labels) to lift minority recall; other labels use Baseline logits.
+
+---
+
+## 2) Data flow (stages)
+
+### Stage-1 — Core (PTB-XL)
+Script: `scr\preprocessing.py`  
+- Builds `processed\ptbxl_core.parquet` and label matrices:
+  - `labels_71_ge50.csv` (71 columns + `ecg_id`)
+  - `labels_5_super.csv` (NORM, MI, STTC, CD, HYP)
+- Official folds respected; splits written to `train_ids.csv`, `val_ids.csv`, `test_ids.csv`.
+- Age winsorization at 90 (per PhysioNet practice).
+- Report: `PREP_REPORT.txt`.
+
+### Stage-2 — PTB-XL+ fusion
+Script: `scr\ptbxl_plus_fusion.py`  
+- Validates & merges engineered features and **median beats**.
+- Imputation/scaling → `ptbxl_plus_features_imputed_scaled.parquet` (+ metadata JSON).
+- Final training table: `ptbxl_train_ready_plus.parquet`.
+- Report: `PTBXL_PLUS_FUSION_REPORT.txt`.
+
+### Stage-3 — Training & Evaluation
+- **Models:** `train_fusion_v2.py` (Baseline), `train_fusion_v2_hybrid.py` (Sampler variant).
+- **FusionNetV2:** MLP(features) ⊕ CNN(waveform) ⊕ CNN(median) → heads (71/5).
+- **Loss/regularization:** BCE + label smoothing (71), logit-L2, confidence penalty; class weights if needed.
+- **Calibration:** temperature scaling τ (VAL ECE minimization) → `calib_tau71.json`.
+- **Thresholds:** per-class quantile search on VAL → `thresholds_val.json` (Baseline); Hybrid thresholds via `hybrid_thresholds_val.py` → `thresholds_val_hybrid.json`.
+- **Hybrid selection:** `rare_plus.json` decides which labels use Sampler logits; rest use Baseline.
+
+---
+
+## 3) Reproducible artifacts (per run)
+
+Each run folder contains:
+
+- `best_model.pt` — state dict plus metadata: `labels71`, `feat_cols`, `use_wave`, `use_median`.
+- `TRAIN_PLAN.txt`, `train_log.txt`, `FINAL_REPORT.txt`.
+- After eval:
+  - `class_metrics_raw.csv` / `class_metrics_calibrated.csv` (per-class ROC-AUC / PR-AUC; raw vs calibrated).
+  - `calib_tau71.json` (scalar τ).
+  - `thresholds_val.json` (Baseline) or `thresholds_val_hybrid.json` (Hybrid).
+  - `CDS_REPORT.txt` and/or `CDS_REPORT_HYBRID.txt`.
+
+**OPS outputs (Hybrid)**  
+`operating_metrics_test_hybrid_{f1,tpr90,fpr05}.csv` with columns:  
+`label, th, tp, fp, tn, fn, precision, recall, specificity, f1` (+ `prev` if available).
+
+---
+
+## 4) Minimal commands (PowerShell)
+
+**Data preparation**
+```powershell
+python D:\Project\ECG\old\scr\preprocessing.py --base D:\Project\ECG\old --ptbxl_root D:\Project\ECG\old\ptbxl
+python D:\Project\ECG\old\scr\ptbxl_plus_fusion.py --base D:\Project\ECG\old --ptbxl_plus_root D:\Project\ECG\old\ptbxl+
+Train (optional)
+
+powershell
+Copy code
+# Baseline
+python D:\Project\ECG\old\scr\train\train_fusion_v2.py --base D:\Project\ECG\old --use_waveform 1 --use_median 1 --epochs 60 --bs 12 --sched cosine
+# Sampler
+python D:\Project\ECG\old\scr\train\train_fusion_v2_hybrid.py --base D:\Project\ECG\old --use_waveform 1 --use_median 1 --epochs 60 --bs 12 --sched cosine
+Evaluate & calibrate
+
+powershell
+Copy code
+# Baseline
+python D:\Project\ECG\old\processed\runs\eval_calibrate_v2.py --base D:\Project\ECG\old --run_dir D:\Project\ECG\old\processed\runs\fusion_v2
+
+# Hybrid thresholds on VAL, then eval Hybrid on TEST
+python D:\Project\ECG\old\processed\runs\hybrid_thresholds_val.py --base D:\Project\ECG\old --run_base D:\Project\ECG\old\processed\runs\fusion_v2 --run_samp D:\Project\ECG\old\processed\runs\fusion_v2_hybrid
+python D:\Project\ECG\old\processed\runs\eval_calibrate_v2_hybrid.py --base D:\Project\ECG\old --run_base D:\Project\ECG\old\processed\runs\fusion_v2 --run_samp D:\Project\ECG\old\processed\runs\fusion_v2_hybrid
+Operating points (Hybrid policies)
+
+powershell
+Copy code
+python D:\Project\ECG\old\processed\runs\ops_metrics_hybrid.py --base D:\Project\ECG\old --run_dir D:\Project\ECG\old\processed\runs\fusion_v2_hybrid --policy f1
+python D:\Project\ECG\old\processed\runs\ops_metrics_hybrid.py --base D:\Project\ECG\old --run_dir D:\Project\ECG\old\processed\runs\fusion_v2_hybrid --policy tpr90
+python D:\Project\ECG\old\processed\runs\ops_metrics_hybrid.py --base D:\Project\ECG\old --run_dir D:\Project\ECG\old\processed\runs\fusion_v2_hybrid --policy fpr05
+Compare runs
+
+powershell
+Copy code
+python D:\Project\ECG\old\processed\runs\compare_runs_v2.py --base D:\Project\ECG\old --run_base D:\Project\ECG\old\processed\runs\fusion_v2 --run_samp D:\Project\ECG\old\processed\runs\fusion_v2_hybrid
+5) Notes & troubleshooting
+Paths: The code expects absolute paths as shown; if you change the root, pass your --base accordingly everywhere.
+
+Threshold files:
+
+Baseline OPS expects thresholds_val.json in its run directory.
+Hybrid OPS expects thresholds_val_hybrid.json. Rebuild with hybrid_thresholds_val.py if missing.
+Calibration: calib_tau71.json holds the temperature τ; metrics tables include both raw and calibrated AUCs.
+GPU memory: Reduce --bs if you hit OOM; you can temporarily run with --use_waveform 0 to validate the tabular+median stack.
+
+6) What changed and why (succinct)
+We kept Stage-1/2 fully deterministic (no mutation of raw PTB-XL/XL+).
+We introduced an inference-time hybrid (per-label switch to the Sampler model for 15 rare classes) to raise recall without retraining.
+Calibration and VAL-derived thresholds ensure decision-level control under F1 / TPR≥90% / FPR≤5% policies on TEST, enabling CDS-grade risk management.
